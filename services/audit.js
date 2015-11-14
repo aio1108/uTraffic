@@ -19,6 +19,7 @@ var async = require('async'),
         parking_lot: 2.0,
         population: 1.0
     },
+    TUNING_FACTOR = 0.8,
     TOTAL_SCORE = _.reduce(_.keys(scores), function(memo, key){ return memo + scores[key] }, 0);
 
 function calculate(next){
@@ -35,15 +36,15 @@ function calculate(next){
 
     async.parallel(
         {
-            train: (_calculate).bind({ items: results.train, center: [121.654129, 25.074020], type: 'train', distance: distance }),
-            shuttle: (_calculate).bind({ items: results.shuttle, center: [121.654129, 25.074020], type: 'shuttle', distance: distance }),
-            parking_lot: (_calculate).bind({ items: results.parking_lot, center: [121.654129, 25.074020], type: 'parking_lot', distance: distance }),
-            airport: (_calculate).bind({ items: results.airport, center: [121.654129, 25.074020], type: 'airport', distance: distance }),
-            MRT: (_calculate).bind({ items: results.MRT, center: [121.654129, 25.074020], type: 'MRT', distance: distance }),
-            THSR: (_calculate).bind({ items: results.THSR, center: [121.654129, 25.074020], type: 'THSR', distance: distance }),
-            highway: (_calculate).bind({ items: results.highway, center: [121.654129, 25.074020], type: 'highway', distance: distance }),
-            bus: (_calculate).bind({ items: results.bus, center: [121.654129, 25.074020], type: 'bus', distance: distance }),
-            bike: (_calculate).bind({ items: results.bike, center: [121.654129, 25.074020], type: 'bike', distance: distance }),
+            train: (_calculate).bind({ items: results.train, center: center, type: 'train', distance: distance }),
+            shuttle: (_calculate).bind({ items: results.shuttle, center: center, type: 'shuttle', distance: distance }),
+            parking_lot: (_calculate).bind({ items: results.parking_lot, center: center, type: 'parking_lot', distance: distance }),
+            airport: (_calculate).bind({ items: results.airport, center: center, type: 'airport', distance: distance }),
+            MRT: (_calculate).bind({ items: results.MRT, center: center, type: 'MRT', distance: distance }),
+            THSR: (_calculate).bind({ items: results.THSR, center: center, type: 'THSR', distance: distance }),
+            highway: (_calculate).bind({ items: results.highway, center: center, type: 'highway', distance: distance }),
+            bus: (_calculate).bind({ items: results.bus, center: center, type: 'bus', distance: distance }),
+            bike: (_calculate).bind({ items: results.bike, center: center, type: 'bike', distance: distance }),
             population: (_calculate_population).bind({ population: population, type: 'population', distance: distance })
         },
         function(err, scores){
@@ -51,8 +52,7 @@ function calculate(next){
                 next(err);
                 return;
             }
-            console.log(scores);
-            next(null, ((scores.train + scores.shuttle + scores.airport + scores.MRT + scores.THSR + scores.highway + scores.highway + scores.bus + scores.bike + scores.population) * weight * 100));
+            next(null, (((scores.train + scores.shuttle + scores.airport + scores.MRT + scores.THSR + scores.highway + scores.highway + scores.bus + scores.bike + scores.population) * weight * 100) / TUNING_FACTOR));
         }
     );
 }
