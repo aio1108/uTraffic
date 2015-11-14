@@ -1,7 +1,7 @@
 var express = require('express'),
     logger = require('morgan'),
     bodyParser = require('body-parser'),
-    API_PREFIX = '/api',
+    API_PREFIX = '/useful/api',
     API_VERSION = '/v1',
     trafficRouter = require('./routers/traffic'),
     app = express();
