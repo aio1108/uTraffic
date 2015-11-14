@@ -55,23 +55,23 @@ function scoring(coordinate, cb){
             highway: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [308] }),
             bus: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [10100] }),
             bike: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [10104] }),
-            population_100m: (population.search).bind({ position: lat + ', ' + lon, radius: 100 }),
-            population_500m: (population.search).bind({ position: lat + ', ' + lon, radius: 500 }),
-            population_1km: (population.search).bind({ position: lat + ', ' + lon, radius: 1000 }),
-            population_5km: (population.search).bind({ position: lat + ', ' + lon, radius: 5000 })
+            population: (population.search).bind({ position: lat + ', ' + lon, radius: 5000 })
         },
         function(err, results){
+            var population_500m, population_1km, population_5km;
             if(err){
                 console.log(err);
                 cb({ message: 'Unknow Error.' });
                 return;
             }
-
+            population_5km = results['population']['features'][0]['properties']['population'];
+            population_1km = population_5km / 5;
+            population_500m = population_5km / 10;
             async.parallel(
                 {
-                    '500 m': (audit.calculate).bind({ results: results, distance: '500 m', population: results['population_500m']['features'][0]['properties']['population'], center: [lon, lat], weight: WEIGHTS['500 m'] }),
-                    '1 km': (audit.calculate).bind({ results: results, distance: '1 km', population: results['population_1km']['features'][0]['properties']['population'], center: [lon, lat], weight: WEIGHTS['1 km'] }),
-                    '5 km': (audit.calculate).bind({ results: results, distance: '5 km', population: results['population_5km']['features'][0]['properties']['population'], center: [lon, lat], weight: WEIGHTS['5 km'] })
+                    '500 m': (audit.calculate).bind({ results: results, distance: '500 m', population: population_500m, center: [lon, lat], weight: WEIGHTS['500 m'] }),
+                    '1 km': (audit.calculate).bind({ results: results, distance: '1 km', population: population_1km, center: [lon, lat], weight: WEIGHTS['1 km'] }),
+                    '5 km': (audit.calculate).bind({ results: results, distance: '5 km', population: population_5km, center: [lon, lat], weight: WEIGHTS['5 km'] })
                 },
                 function(err, scores){
                     if(err){
