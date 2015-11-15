@@ -3,6 +3,7 @@ var express = require('express'),
     landmark = require('../services/landmark'),
     population = require('../services/population'),
     geocoding = require('../services/geocoding'),
+    statistics = require('../services/statistics'),
     audit = require('../services/audit'),
     WEIGHTS = {
         '500 m': 0.80,
@@ -40,6 +41,69 @@ router.post('/audit/position', function(req, res) {
         res.json(result);
     });
 });
+
+router.post('/statistics/address', function(req, res){
+    var address = req.body.address;
+    async.waterfall(
+        [
+            (geocoding.getCoordinate).bind({ address: address }),
+            collect
+        ],
+        function(err, result){
+            if(err){
+                res.status(500).json(err);
+                return;
+            }
+            res.json(result);
+        }
+    );
+});
+
+router.post('/statistics/position', function(req, res) {
+    var lon = req.body.lon, //121.654129
+        lat = req.body.lat; //25.074020
+
+    collect({lon: lon, lat: lat}, function(err, result){
+        if(err){
+            res.status(500).json(err);
+            return;
+        }
+        res.json(result);
+    });
+});
+
+function collect(coordinate, cb){
+    var lon = coordinate.lon,
+        lat = coordinate.lat;
+    async.parallel(
+        {
+            train: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [301] }),
+            shuttle: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [302] }),
+            parking_lot: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [303] }),
+            airport: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [304] }),
+            MRT: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [306] }),
+            THSR: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [307] }),
+            highway: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [308] }),
+            bus: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [10100] }),
+            bike: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [10104] })
+        },
+        function(err, results){
+            if(err){
+                console.log(err);
+                cb({ message: 'Unknow Error.' });
+                return;
+            }
+            statistics.classify({lon: lon, lat: lat}, results, function(err, result){
+                if(err){
+                    console.log(err);
+                    cb({ message: 'Unknow Error.' });
+                    return;
+                }
+                cb(null, result);
+            });
+        }
+    );
+}
 
 function scoring(coordinate, cb){
     var lon = coordinate.lon,
