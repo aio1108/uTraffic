@@ -75,6 +75,7 @@ router.post('/statistics/position', function(req, res) {
 function collect(coordinate, cb){
     var lon = coordinate.lon,
         lat = coordinate.lat;
+    console.log(coordinate);
     async.parallel(
         {
             train: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [301] }),
@@ -108,6 +109,7 @@ function collect(coordinate, cb){
 function scoring(coordinate, cb){
     var lon = coordinate.lon,
         lat = coordinate.lat;
+    console.log(coordinate);
     async.parallel(
         {
             train: (landmark.search).bind({ position: [[lat, lon]], range: 5000, category: [301] }),

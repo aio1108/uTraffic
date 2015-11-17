@@ -12,6 +12,7 @@
     "express": "~4.13.1",
     "geo-distance-safe": "^0.1.2",
     "morgan": "~1.6.1",
+    "pm2": "^0.15.10",
     "request": "^2.65.0",
     "underscore": "^1.8.3"
   }
