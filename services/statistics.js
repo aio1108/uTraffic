@@ -1,44 +1,44 @@
 var async= require('async'),
     _ = require('underscore'),
-    Distance = require('geo-distance-safe'),
-    DEFAULT_RESULT = {
-        "500m": {
-            train: 0,
-            shuttle: 0,
-            parking_lot: 0,
-            airport: 0,
-            MRT: 0,
-            THSR: 0,
-            highway: 0,
-            bus: 0,
-            bike: 0
-        },
-        "1km": {
-            train: 0,
-            shuttle: 0,
-            parking_lot: 0,
-            airport: 0,
-            MRT: 0,
-            THSR: 0,
-            highway: 0,
-            bus: 0,
-            bike: 0
-        },
-        "5km": {
-            train: 0,
-            shuttle: 0,
-            parking_lot: 0,
-            airport: 0,
-            MRT: 0,
-            THSR: 0,
-            highway: 0,
-            bus: 0,
-            bike: 0
-        }
-    };
+    Distance = require('geo-distance-safe');
 
 function classify(coordinate, obj, cb){
-    var result = _.extend({}, DEFAULT_RESULT);
+    var DEFAULT_RESULT = {
+            "500m": {
+                train: 0,
+                shuttle: 0,
+                parking_lot: 0,
+                airport: 0,
+                MRT: 0,
+                THSR: 0,
+                highway: 0,
+                bus: 0,
+                bike: 0
+            },
+            "1km": {
+                train: 0,
+                shuttle: 0,
+                parking_lot: 0,
+                airport: 0,
+                MRT: 0,
+                THSR: 0,
+                highway: 0,
+                bus: 0,
+                bike: 0
+            },
+            "5km": {
+                train: 0,
+                shuttle: 0,
+                parking_lot: 0,
+                airport: 0,
+                MRT: 0,
+                THSR: 0,
+                highway: 0,
+                bus: 0,
+                bike: 0
+            }
+        },
+        result = _.extend({}, DEFAULT_RESULT);
 
     async.forEachOf(
         obj,
