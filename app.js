@@ -1,4 +1,5 @@
 var express = require('express'),
+    path = require('path'),
     logger = require('morgan'),
     bodyParser = require('body-parser'),
     API_PREFIX = '/useful/api',
@@ -9,6 +10,7 @@ var express = require('express'),
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(API_PREFIX + API_VERSION + '/traffic', trafficRouter);
 
