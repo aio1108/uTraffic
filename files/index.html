@@ -17,11 +17,28 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	<meta property="og:site_name" content="U-Traffic" />
 	
     <title>U-Traffic</title>
-
+	
 	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAjU0EJWnWPMv7oQ-jjS7dYxSPW5CJgpdgO_s4yyMovOaVh_KvvhSfpvagV18eOyDWu7VytS6Bi1CWxw"
       type="text/javascript"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+	<!--數字動畫效果-->
+		<script src="../js/odometer.js"></script>
+		<link rel="stylesheet" href="../css/odometer-theme-train-station.css"/>
+		<style>
+			.odometer {
+			  font-size: 40px;
+			}
+		</style>
+		<script>
+			window.odometerOptions = {
+			  format: '(ddd).dd'
+			};
+		</script>
 
+	<!--end of 數字動畫效果-->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
   	<script type="text/javascript">
 	var auto_lat=0;
 	var auto_lon=0;
@@ -73,6 +90,7 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 		//<iframe width="800" height="600" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src=http://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=臺北市羅斯福路二段102號&z=16&output=embed&t=></iframe>
 		
 	});
+	var traficScore = 0;
 	function getPositionScore(lat,lon){
 	
 		$.ajax({
@@ -87,11 +105,12 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 				success : function(jsonData) {
 					//alert("交通便利指數:"+Math.round(jsonData.score)) ;
 					
-					$('#trafficScore').html("交通便利指數:"+Math.round(jsonData.score))
+					//$('#trafficScore').html("交通便利指數:");//+Math.round(jsonData.score))
+					$('#trafficScore').html("<div><span class=\'odometer\' id=\'u5\'>"+0+"</span></div>");
+					traficScore = Math.round(jsonData.score);
+					trangeNumber();
 				}
-		});
-	
-	
+		});	
 	}
 
 	
@@ -107,12 +126,20 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 				async : true,
 				success : function(jsonData) {
 					//alert("交通便利指數:"+Math.round(jsonData.score)) ;
-					
-					$('#trafficScore').html("交通便利指數:"+Math.round(jsonData.score))
+					$('#trafficScore').html("<div><span class=\'odometer\' id=\'u5\'>"+0+"</span></div>");
+					traficScore = Math.round(jsonData.score);
+					trangeNumber();
 				}
 		});
 	
 	}
+	
+	function trangeNumber(){
+		setTimeout(function(){
+			$('.odometer').html(traficScore);
+		  }, 5000);
+	}
+	
 	function getStatisticsViaPosition(lat,lon){
 	
 		$.ajax({
@@ -125,41 +152,81 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 				dataType : 'json',
 				async : true,
 				success : function(jsonData) {
-					
 					$('#statisticsReport').html("");
-					
+					$('#Report_list').html("");
+					var text = $('<ul class=\"nav nav-tabs\">'+
+									'<li role=\"presentation\" class=\"active\"><a href=\"#\" id=\"near\">500m</a></li>'+
+									'<li role=\"presentation\"><a href=\"#\" id=\"middle\">1k</a></li>'+
+									'<li role=\"presentation\"><a href=\"#\" id=\"far\">5k</a></li>'+
+								'</ul>');
+					$(text).appendTo($('#Report_list'));
 					$.each(jsonData, function(index, element) {
 						$('#statisticsReport').append($('<div>', {
-							text: index
+							text: "火車站:"+element.train,
+							id: index
 						})).append($('<div>', {
-							text: "火車站:"+element.train
+							text: "客運站:"+element.shuttle,
+							id: index
 						})).append($('<div>', {
-							text: "客運站:"+element.shuttle
+							text: "停車場:"+element.parking_lot,
+							id: index
 						})).append($('<div>', {
-							text: "停車場:"+element.parking_lot
+							text: "機場:"+element.airport,
+							id: index
 						})).append($('<div>', {
-							text: "機場:"+element.airport
+							text: "捷運站(含出口):"+element.MRT,
+							id: index
 						})).append($('<div>', {
-							text: "捷運站(含出口):"+element.MRT
+							text: "高鐵站:"+element.THSR,
+							id: index
 						})).append($('<div>', {
-							text: "高鐵站:"+element.THSR
+							text: "高快速公路(含交流道):"+element.highway,
+							id: index
 						})).append($('<div>', {
-							text: "高快速公路(含交流道):"+element.highway
+							text: "公車站牌:"+element.bus,
+							id: index
 						})).append($('<div>', {
-							text: "公車站牌:"+element.bus
-						})).append($('<div>', {
-							text: "公共自行車租借處:"+element.bike
+							text: "公共自行車租借處:"+element.bike,
+							id: index
 						}));
 						
 					});
-					
-					
+	
+					data_shown();
+					$("#near").click();
 				}
 		});
 
 	}
-	function getStatisticsViaAddress(address){
 	
+	function data_shown(){
+		$("body").on("click", "#near, #middle, #far", function(){
+			if ($(this).attr("id") == "near") {
+				$("#statisticsReport [id^='500m']").show();
+				$("#statisticsReport [id^='1k']").hide();
+				$("#statisticsReport [id^='5k']").hide();
+				$('#near').parent('li').addClass('active');
+				$('#middle').parent('li').removeClass('active');
+				$('#far').parent('li').removeClass('active');
+			} else if ($(this).attr("id") == "middle") {
+				$("#statisticsReport [id^='500m']").hide();
+				$("#statisticsReport [id^='1k']").show();
+				$("#statisticsReport [id^='5k']").hide();
+				$('#near').parent('li').removeClass('active');
+				$('#middle').parent('li').addClass('active');
+				$('#far').parent('li').removeClass('active');
+			} else if ($(this).attr("id") == "far") {
+				$("#statisticsReport [id^='500m']").hide();
+				$("#statisticsReport [id^='1k']").hide();
+				$("#statisticsReport [id^='5k']").show();
+				$('#near').parent('li').removeClass('active');
+				$('#middle').parent('li').removeClass('active');
+				$('#far').parent('li').addClass('active');
+			}
+		});
+	}
+
+	function getStatisticsViaAddress(address){
 		$.ajax({
 				type : 'POST',
 				url : domain+"useful/api/v1/traffic/statistics/address",
@@ -170,28 +237,41 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 				async : true,
 				success : function(jsonData) {
 					$('#statisticsReport').html("");
-					
+					$('#Report_list').html("");
+					var text = $('<ul class=\"nav nav-tabs\">'+
+									'<li role=\"presentation\" class=\"active\"><a href=\"#\" id=\"near\">500m</a></li>'+
+									'<li role=\"presentation\"><a href=\"#\" id=\"middle\">1k</a></li>'+
+									'<li role=\"presentation\"><a href=\"#\" id=\"far\">5k</a></li>'+
+								'</ul>');
+					$(text).appendTo($('#Report_list'));
 					$.each(jsonData, function(index, element) {
 						$('#statisticsReport').append($('<div>', {
-							text: index
+							text: "火車站:"+element.train,
+							id: index
 						})).append($('<div>', {
-							text: "火車站:"+element.train
+							text: "客運站:"+element.shuttle,
+							id: index
 						})).append($('<div>', {
-							text: "客運站:"+element.shuttle
+							text: "停車場:"+element.parking_lot,
+							id: index
 						})).append($('<div>', {
-							text: "停車場:"+element.parking_lot
+							text: "機場:"+element.airport,
+							id: index
 						})).append($('<div>', {
-							text: "機場:"+element.airport
+							text: "捷運站(含出口):"+element.MRT,
+							id: index
 						})).append($('<div>', {
-							text: "捷運站(含出口):"+element.MRT
+							text: "高鐵站:"+element.THSR,
+							id: index
 						})).append($('<div>', {
-							text: "高鐵站:"+element.THSR
+							text: "高快速公路(含交流道):"+element.highway,
+							id: index
 						})).append($('<div>', {
-							text: "高快速公路(含交流道):"+element.highway
+							text: "公車站牌:"+element.bus,
+							id: index
 						})).append($('<div>', {
-							text: "公車站牌:"+element.bus
-						})).append($('<div>', {
-							text: "公共自行車租借處:"+element.bike
+							text: "公共自行車租借處:"+element.bike,
+							id: index
 						}));
 						
 					});
@@ -199,7 +279,6 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 		});
 
 	}
-	
 	
 	function initialize() {
       if (GBrowserIsCompatible()) {
@@ -234,7 +313,7 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	  
       }
     }
-	
+
 
     function showAddress(address) {
 	
@@ -296,37 +375,87 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
       }
     }
 	</script>
-	
+	<style>
+		body{
+			font-family:"Microsoft JhengHei", Arial, Helvetica, sans-serif;
+		}
+		.container{
+			padding-top:80px;
+		}
+		.navbar h1{
+			text-align:center;
+			font-weight:bold;
+			color:#FFFFFF;
+		}
+		#trafficScore{
+			text-align:center;
+			font-weight:bold;
+			font-size:20px;
+		}
+		#u5{
+			font-size:170px;
+		}
+
+		#map_canvas{
+			top:15px;
+		}
+		#form1{
+			margin-bottom:15px;
+		}
+		#Report_list{
+			font-size:16px;
+			font-weight:bold;
+		}
+		#statisticsReport{
+			padding:15px 20px;
+			font-size:16px;
+			font-weight:bold;
+			line-height:24px;
+		}
+		
+	</style>
 	
 </head>
 
 	<body onload="initialize()" onunload="GUnload()">
-		<form id='form1' action="#" onsubmit="showAddress(this.address.value); return false">
-		  <p>
-			
-			<br/>
-			
-		  </p>
-		  <p>
-			<input type="text" style="width:350px" name="address" value="請輸入..." />
-			<input type="submit" value="Search" />
-		  </p>
-		  <table>
-			<tr>
-				<td>
-					<div id="map_canvas" style="width: 800px; height: 600px"></div>
-				</td>
-				<td style='width:100px'></td>
-				<td>
-					<div id='trafficScore'></div>
-					<div id='statisticsReport'></div>
-				</td>
-			</tr>
-		  </table>
-		 
-		  
-		  
-		</form>
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container-fluid">
+					<h1>uTraffic - 交通便利指數</h1>
+			</div>
+		</nav>
+		<div class="container">
+			<form id='form1' role="form" action="#" onsubmit="showAddress(this.address.value); return false">	
+				<div class="row">
+					<div class="col-sm-8">
+						
+							<div class="form-group">
+								<div class="col-xs-12">
+								<label for="email">請輸入欲查詢的地址、地名或經緯度:</label>
+								</div>
+								<div class="col-xs-10">
+								<input type="text" class="form-control" name="address" value="" placeholder="ex:台北車站、台北市中正區忠孝西路1段49號、25.047908,121.517315"/>
+								</div>
+								<div class="col-xs-2">
+								<button  type="submit" value="Search" class="btn btn-default">Search</button >
+								</div>
+							</div>
+						
+						<br/>
+						<div id="map_canvas" style="width: 100%; height:450px"></div>
+					</div>
+					<div class="col-sm-4">
+						<div id='trafficScore'></div>
+						<div id='Report_list'></div>
+						<div id='statisticsReport'></div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<footer class="footer">
+			<div class="container">
+				<p class="text-muted">Copyright © 2015 Useful People studio</p>
+			</div>
+		</footer>
 
 	</body>
 </html>
