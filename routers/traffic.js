@@ -1,5 +1,6 @@
 var express = require('express'),
     async = require('async'),
+	path = require('path'),
     landmark = require('../services/landmark'),
     population = require('../services/population'),
     geocoding = require('../services/geocoding'),
@@ -71,6 +72,11 @@ router.post('/statistics/position', function(req, res) {
         res.json(result);
     });
 });
+
+router.startup = function(req, res){
+	res.sendfile(path.resolve('./files/index.html'));
+};
+
 
 function collect(coordinate, cb){
     var lon = coordinate.lon,

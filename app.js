@@ -14,6 +14,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(API_PREFIX + API_VERSION + '/traffic', trafficRouter);
 
+app.get('/demo', trafficRouter.startup);
+
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
