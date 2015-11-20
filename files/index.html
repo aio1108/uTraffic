@@ -17,10 +17,10 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	<meta property="og:site_name" content="U-Traffic" />
 	
     <title>U-Traffic</title>
-	
 	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAjU0EJWnWPMv7oQ-jjS7dYxSPW5CJgpdgO_s4yyMovOaVh_KvvhSfpvagV18eOyDWu7VytS6Bi1CWxw"
       type="text/javascript"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
 	<!--數字動畫效果-->
@@ -45,6 +45,7 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	var map = null;
     var geocoder = null;
 	var domain="http://localhost:8080/";
+	var runNumber=0;
 	
 	navigator.geolocation.getCurrentPosition(function (pos) {
 	    auto_lat = pos.coords.latitude;  //取得經度
@@ -68,7 +69,6 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	}
 	*/
 
-  	
   	$(document).ready(function() {
 		//alert(auto_lat);
 		//alert(auto_lon);
@@ -81,12 +81,7 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 		//http://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=輸入查詢的地址&z=比例大小&output=embed&t=地圖模式
 		//$('#genGMDiv').html("<iframe width='800' height='600' frameborder='0' scrolling='no' marginheight='0' marginwidth='0' src="+gmURL+"></iframe>");
 		//$('#genGMDiv').find('iframe').attr('src','http://maps.google.com/maps?q=loc:25.074020,121.654129');
-		
-		
-		
-		
-		
-		
+
 		//<iframe width="800" height="600" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src=http://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=臺北市羅斯福路二段102號&z=16&output=embed&t=></iframe>
 		
 	});
@@ -108,6 +103,7 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 					//$('#trafficScore').html("交通便利指數:");//+Math.round(jsonData.score))
 					$('#trafficScore').html("<div><span class=\'odometer\' id=\'u5\'>"+0+"</span></div>");
 					traficScore = Math.round(jsonData.score);
+					runNumber=0;
 					trangeNumber();
 				}
 		});	
@@ -128,17 +124,23 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 					//alert("交通便利指數:"+Math.round(jsonData.score)) ;
 					$('#trafficScore').html("<div><span class=\'odometer\' id=\'u5\'>"+0+"</span></div>");
 					traficScore = Math.round(jsonData.score);
+					runNumber=0;
 					trangeNumber();
 				}
 		});
 	
 	}
-	
+
 	function trangeNumber(){
 		setTimeout(function(){
-			$('.odometer').html(traficScore);
-		  }, 5000);
+			$('.odometer').html(runNumber++);
+			if(runNumber<=traficScore){
+			trangeNumber()
+			}
+		}, 50);
 	}
+	
+	
 	
 	function getStatisticsViaPosition(lat,lon){
 	
@@ -152,79 +154,18 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 				dataType : 'json',
 				async : true,
 				success : function(jsonData) {
-					$('#statisticsReport').html("");
-					$('#Report_list').html("");
-					var text = $('<ul class=\"nav nav-tabs\">'+
-									'<li role=\"presentation\" class=\"active\"><a href=\"#\" id=\"near\">500m</a></li>'+
-									'<li role=\"presentation\"><a href=\"#\" id=\"middle\">1k</a></li>'+
-									'<li role=\"presentation\"><a href=\"#\" id=\"far\">5k</a></li>'+
-								'</ul>');
-					$(text).appendTo($('#Report_list'));
-					$.each(jsonData, function(index, element) {
-						$('#statisticsReport').append($('<div>', {
-							text: "火車站:"+element.train,
-							id: index
-						})).append($('<div>', {
-							text: "客運站:"+element.shuttle,
-							id: index
-						})).append($('<div>', {
-							text: "停車場:"+element.parking_lot,
-							id: index
-						})).append($('<div>', {
-							text: "機場:"+element.airport,
-							id: index
-						})).append($('<div>', {
-							text: "捷運站(含出口):"+element.MRT,
-							id: index
-						})).append($('<div>', {
-							text: "高鐵站:"+element.THSR,
-							id: index
-						})).append($('<div>', {
-							text: "高快速公路(含交流道):"+element.highway,
-							id: index
-						})).append($('<div>', {
-							text: "公車站牌:"+element.bus,
-							id: index
-						})).append($('<div>', {
-							text: "公共自行車租借處:"+element.bike,
-							id: index
-						}));
-						
-					});
-	
-					data_shown();
-					$("#near").click();
+					var chart500m = $('<div id="container500m" style="min-width: 315px; max-width: 515px; height: 300px; margin: 0 auto"></div>'),
+						chart1km = $('<div id="container1km" style="min-width: 315px; max-width: 515px; height: 300px; margin: 0 auto"></div>'),
+						chart5km = $('<div id="container5km" style="min-width: 315px; max-width: 515px; height: 300px; margin: 0 auto"></div>');
+					$(chart500m).appendTo($('#tabpanel500m'));
+					$(chart1km).appendTo($('#tabpanel1KM'));
+					$(chart5km).appendTo($('#tabpanel5KM'));
+					drawBarCharts(jsonData);
 				}
 		});
 
 	}
 	
-	function data_shown(){
-		$("body").on("click", "#near, #middle, #far", function(){
-			if ($(this).attr("id") == "near") {
-				$("#statisticsReport [id^='500m']").show();
-				$("#statisticsReport [id^='1k']").hide();
-				$("#statisticsReport [id^='5k']").hide();
-				$('#near').parent('li').addClass('active');
-				$('#middle').parent('li').removeClass('active');
-				$('#far').parent('li').removeClass('active');
-			} else if ($(this).attr("id") == "middle") {
-				$("#statisticsReport [id^='500m']").hide();
-				$("#statisticsReport [id^='1k']").show();
-				$("#statisticsReport [id^='5k']").hide();
-				$('#near').parent('li').removeClass('active');
-				$('#middle').parent('li').addClass('active');
-				$('#far').parent('li').removeClass('active');
-			} else if ($(this).attr("id") == "far") {
-				$("#statisticsReport [id^='500m']").hide();
-				$("#statisticsReport [id^='1k']").hide();
-				$("#statisticsReport [id^='5k']").show();
-				$('#near').parent('li').removeClass('active');
-				$('#middle').parent('li').removeClass('active');
-				$('#far').parent('li').addClass('active');
-			}
-		});
-	}
 
 	function getStatisticsViaAddress(address){
 		$.ajax({
@@ -236,9 +177,14 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 				dataType : 'json',
 				async : true,
 				success : function(jsonData) {
-					$('#statisticsReport').html("");
-					$('#Report_list').html("");
-					var text = $('<ul class=\"nav nav-tabs\">'+
+					var chart500m = $('<div id="container500m" style="min-width: 400px; max-width: 800px; height: 400px; margin: 0 auto"></div>'),
+						chart1km = $('<div id="container1km" style="min-width: 400px; max-width: 800px; height: 400px; margin: 0 auto"></div>'),
+						chart5km = $('<div id="container5km" style="min-width: 400px; max-width: 800px; height: 400px; margin: 0 auto"></div>');
+					$(chart500m).appendTo($('#tabpanel500m'));
+					$(chart1km).appendTo($('#tabpanel1KM'));
+					$(chart5km).appendTo($('#tabpanel5KM'));
+					drawBarCharts(jsonData);
+					/*var text = $('<ul class=\"nav nav-tabs\">'+
 									'<li role=\"presentation\" class=\"active\"><a href=\"#\" id=\"near\">500m</a></li>'+
 									'<li role=\"presentation\"><a href=\"#\" id=\"middle\">1k</a></li>'+
 									'<li role=\"presentation\"><a href=\"#\" id=\"far\">5k</a></li>'+
@@ -274,10 +220,97 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 							id: index
 						}));
 						
-					});
+					});*/
 				}
 		});
 
+	}
+
+	function drawBarCharts(data){
+		var series500m = [],
+			series1km = [],
+			series5km = [];
+		$.each(data, function(index, element) {
+			if(index === '500m'){
+				series500m.push({ name: '火車站', data: [element['train']] });
+				series500m.push({ name: '客運站', data: [element['shuttle']] });
+				series500m.push({ name: '停車場', data: [element['parking_lot']] });
+				series500m.push({ name: '捷運站(含出口)', data: [element['MRT']] });
+				series500m.push({ name: '高鐵站', data: [element['THSR']] });
+				series500m.push({ name: '高快速道路(含交流道)', data: [element['highway']] });
+				series500m.push({ name: '公車站牌', data: [element['bus']] });
+				series500m.push({ name: '公共出租自行車', data: [element['bike']] });
+			}
+			if(index === '1km'){
+				series1km.push({ name: '火車站', data: [element['train']] });
+				series1km.push({ name: '客運站', data: [element['shuttle']] });
+				series1km.push({ name: '停車場', data: [element['parking_lot']] });
+				series1km.push({ name: '捷運站(含出口)', data: [element['MRT']] });
+				series1km.push({ name: '高鐵站', data: [element['THSR']] });
+				series1km.push({ name: '高快速道路(含交流道)', data: [element['highway']] });
+				series1km.push({ name: '公車站牌', data: [element['bus']] });
+				series1km.push({ name: '公共出租自行車', data: [element['bike']] });
+			}
+			if(index === '5km'){
+				series5km.push({ name: '火車站', data: [element['train']] });
+				series5km.push({ name: '客運站', data: [element['shuttle']] });
+				series5km.push({ name: '停車場', data: [element['parking_lot']] });
+				series5km.push({ name: '捷運站(含出口)', data: [element['MRT']] });
+				series5km.push({ name: '高鐵站', data: [element['THSR']] });
+				series5km.push({ name: '高快速道路(含交流道)', data: [element['highway']] });
+				series5km.push({ name: '公車站牌', data: [element['bus']] });
+				series5km.push({ name: '公共出租自行車', data: [element['bike']] });
+			}
+		});
+		draw(series500m, '#container500m', ' ');
+		draw(series1km, '#container1km', ' ');
+		draw(series5km, '#container5km', ' ');
+	}
+	
+	
+	function draw(series, id, title){
+		$(id).highcharts({
+	        chart: {
+	            type: 'bar'
+	        },
+	        title: {
+	            text: title
+	        },
+	        xAxis: {
+	            title: {
+	                text: '交通設施'
+	            }
+	        },
+	        yAxis: {
+	            min: 0,
+	            title: {
+	                text: '數量',
+	                align: 'high'
+	            },
+	            labels: {
+	                overflow: 'justify'
+	            }
+	        },
+	        plotOptions: {
+	            bar: {
+	                dataLabels: {
+	                    enabled: true
+	                }
+	            }
+	        },
+	        legend: {
+	            layout: 'horizontal',
+	            align: 'center',
+	            verticalAlign: 'bottom',
+	            borderWidth: 1,
+	            backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
+	            shadow: true
+	        },
+	        credits: {
+	            enabled: false
+	        },
+	        series: series
+	    });
 	}
 	
 	function initialize() {
@@ -319,8 +352,6 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	
 	  //var result = address.split(',');
 	  //alert(result.length);
-	 
-	  
       if (geocoder) {
         geocoder.getLatLng(
           address,
@@ -374,6 +405,9 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
         );
       }
     }
+	
+	
+	
 	</script>
 	<style>
 		body{
@@ -391,13 +425,16 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 			text-align:center;
 			font-weight:bold;
 			font-size:20px;
+			margin:15px;
 		}
 		#u5{
 			font-size:170px;
+			line-height:170px;
 		}
 
 		#map_canvas{
 			top:15px;
+			bottom:15px;
 		}
 		#form1{
 			margin-bottom:15px;
@@ -411,8 +448,15 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 			font-size:16px;
 			font-weight:bold;
 			line-height:24px;
+			    height: 400px;
 		}
-		
+		.footer {
+			bottom: 0;
+			width: 100%;
+		}
+		.footer .container{
+			padding-top:0px;
+		}
 	</style>
 	
 </head>
@@ -426,14 +470,13 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 		<div class="container">
 			<form id='form1' role="form" action="#" onsubmit="showAddress(this.address.value); return false">	
 				<div class="row">
-					<div class="col-sm-8">
-						
+					<div class="col-sm-6">
 							<div class="form-group">
 								<div class="col-xs-12">
 								<label for="email">請輸入欲查詢的地址、地名或經緯度:</label>
 								</div>
 								<div class="col-xs-10">
-								<input type="text" class="form-control" name="address" value="" placeholder="ex:台北車站、台北市中正區忠孝西路1段49號、25.047908,121.517315"/>
+								<input type="text" class="form-control" id="addressInput" name="address" value="" placeholder="ex:台北車站、台北市中正區忠孝西路1段49號、25.047908,121.517315"/>
 								</div>
 								<div class="col-xs-2">
 								<button  type="submit" value="Search" class="btn btn-default">Search</button >
@@ -441,19 +484,46 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 							</div>
 						
 						<br/>
-						<div id="map_canvas" style="width: 100%; height:450px"></div>
+						<div id="map_canvas" style="width: 100%; height:500px"></div>
 					</div>
-					<div class="col-sm-4">
+					<div class="col-sm-6">
 						<div id='trafficScore'></div>
+						<hr/>
 						<div id='Report_list'></div>
-						<div id='statisticsReport'></div>
+						<div id='statisticsReport'>
+							<div>
+								<!-- Nav tabs -->
+								<ul class="nav nav-tabs" role="tablist">
+									<li role="presentation" class="active"><a href="#tabpanel500m" aria-controls="500m" role="tab" 	data-toggle="tab">500公尺內</a></li>
+									<li role="presentation"><a href="#tabpanel1KM" aria-controls="1KM" role="tab" data-toggle="tab">1公里內</a></li>
+									<li role="presentation"><a href="#tabpanel5KM" aria-controls="5KM" role="tab" data-toggle="tab">5公里內</a></li>
+								</ul>
+
+							  <!-- Tab panes -->
+								<div class="tab-content">
+									<div role="tabpanel" class="tab-pane active" id="tabpanel500m"></div>
+									<div role="tabpanel" class="tab-pane" id="tabpanel1KM"></div>
+									<div role="tabpanel" class="tab-pane" id="tabpanel5KM"></div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</form>
 		</div>
-		<footer class="footer">
+		<footer class="footer footer-fixed-bottom">
 			<div class="container">
-				<p class="text-muted">Copyright © 2015 Useful People studio</p>
+				<hr/>
+				<div class="row">
+					<div class="col-sm-6">
+						<p class="text-muted"><img src="../img/useful.png" alt="useful people studio" height="100" width="90"> Copyright © 2015 Useful People studio</p>
+					</div>
+					<div class="col-sm-6">
+						
+					</div>
+				</div>
+				
+				
 			</div>
 		</footer>
 
