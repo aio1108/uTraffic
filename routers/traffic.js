@@ -146,12 +146,14 @@ function scoring(coordinate, cb){
                     '5 km': (audit.calculate).bind({ results: results, distance: '5 km', population: population_5km, center: [lon, lat], weight: WEIGHTS['5 km'] })
                 },
                 function(err, scores){
+                    var score;
                     if(err){
                         console.log(err);
                         cb({ message: 'Unknow Error.' });
                         return;
                     }
-                    cb(null, { score: (scores['500 m'] + scores['1 km'] + scores['5 km']) });
+                    score = (scores['500 m'] + scores['1 km'] + scores['5 km']);
+                    cb(null, { score: ((score > 100.0)?100.0:score) });
                 }
             );
         }
